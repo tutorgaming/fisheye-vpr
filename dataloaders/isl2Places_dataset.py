@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """
 Pytorch Dataset Class for ISL2Places Dataset
+Dataset Format is
+- classname-x_<float>-y_<float>.jpg
+Dataset is Inherited from torchvision Dataset Class
+    - ImageFolder Dataset Class
 """
 # Author : Theppasith N. <tutorgaming@gmail.com>
 # Date : 07-Apr-2023
