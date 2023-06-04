@@ -1,25 +1,25 @@
 #!/usr/bin/env python3
 """
-Pytorch Implementation of NetVLAD Part
+Visual Place Recognition Model
 """
 # Author : Theppasith N. <tutorgaming@gmail.com>
-# Date : 14-Apr-2023
+# Date : 04-Jun-2023
 #####################################################################
 # Imports
 #####################################################################
+import torch
+import torch.nn as nn
 
 #####################################################################
 # Class
 #####################################################################
-class NetVLAD(object):
-    def __init__(self):
-        self.netvlad = None
+class VPRModel(nn.Module):
+    def __init__(self, feature_extractor, clustering):
+        super(VPRModel, self).__init__()
+        self.feature_extractor = feature_extractor
+        self.clustering = clustering
 
     def forward(self, x):
-        """
-        Feed Forward Part of the NetVLAD Layer
-
-        Args:
-            x (Descriptor Vector): Descriptor Vector Extracted from input
-        """
-        pass
+        x = self.feature_extractor(x)
+        x = self.clustering(x)
+        return x
