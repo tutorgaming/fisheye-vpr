@@ -51,7 +51,7 @@ class Paris6K_Dataset(object):
         """
         Transform Image !
         """
-        torchvision.transforms.Compose([
+        return torchvision.transforms.Compose([
             torchvision.transforms.Resize((256,256)),
             torchvision.transforms.ToTensor()
         ])
