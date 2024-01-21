@@ -19,6 +19,7 @@ from torchvision.models import resnet18
 #####################################################################
 class Resnet18Encoder(nn.Module):
     def __init__(self, fine_tuning=False):
+        super(Resnet18Encoder, self).__init__()
         # Config
         self.name = "resnet18"
         self.fine_tuning = fine_tuning

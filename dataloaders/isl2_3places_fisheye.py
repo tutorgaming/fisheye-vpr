@@ -18,7 +18,7 @@ from sklearn.model_selection import train_test_split
 class ISL2_3Places_Fisheye_Dataset(object):
     def __init__(self):
         # Dataset Path
-        self.path = "~/isl2/datasets/ISL2_LabLiftToilet/fisheye"
+        self.path = "~/Datasets/ISL2_LabLiftToilet/fisheye"
 
         # Train Test Split Ratio
         self.train_ratio = 0.80

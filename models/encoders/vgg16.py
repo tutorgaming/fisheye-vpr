@@ -20,6 +20,7 @@ from torchvision.models import VGG16_Weights
 #####################################################################
 class VGG16Encoder(nn.Module):
     def __init__(self, fine_tuning=False):
+        super(VGG16Encoder, self).__init__()
         # Config
         self.name = "vgg16"
         self.fine_tuning = fine_tuning
