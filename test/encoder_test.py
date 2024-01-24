@@ -39,10 +39,5 @@ class EncoderTester(object):
                     encoder_output = selected_encoder(train_image)
                     print("Encoder Output : {}".format(np.shape(encoder_output)))
 
-
-
-
-
-
 if __name__ == "__main__":
     ENCODERTEST = EncoderTester()

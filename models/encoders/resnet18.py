@@ -48,3 +48,7 @@ class Resnet18Encoder(nn.Module):
 
     def forward(self, x):
         return self.feature_extractor(x)
+
+    def get_last_dim(self):
+        last_dim_size = list(self.feature_extractor.parameters())[-1].shape[0]
+        return last_dim_size

@@ -10,6 +10,7 @@ Functions and Utilities file
 # Imports
 #####################################################################
 import torch
+import torch.nn.functional as F
 
 #####################################################################
 # Pairwise Distances
