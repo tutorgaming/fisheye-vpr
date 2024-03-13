@@ -12,7 +12,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from torchvision.models import resnet18
+from torchvision.models import resnet18, ResNet18_Weights
 
 #####################################################################
 # Class
@@ -24,7 +24,10 @@ class Resnet18Encoder(nn.Module):
         self.name = "resnet18"
         self.fine_tuning = fine_tuning
         # Load Pretrained Model
-        encoder = resnet18(pretrained=True)
+        encoder = resnet18(
+            weights=ResNet18_Weights.IMAGENET1K_V1, # Pretrained with this weight
+            # pretrained=True
+        )
 
         # Assemble model
         self.feature_extractor = nn.Sequential(
