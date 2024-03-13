@@ -17,6 +17,7 @@ from sklearn.model_selection import train_test_split
 #####################################################################
 class ISL2_3Places_Fisheye_Dataset(object):
     def __init__(self):
+        self.name = "ISL2_LabLiftToiletFisheye"
         # Dataset Path
         self.path = "~/Datasets/ISL2_LabLiftToilet/fisheye"
 

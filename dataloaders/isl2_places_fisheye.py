@@ -22,6 +22,7 @@ from sklearn.model_selection import train_test_split
 #####################################################################
 class ISL2_Places_Fisheye_Dataset(object):
     def __init__(self):
+        self.name = "ISL2_Places4"
         # Dataset Path
         self.path = "/workspace/Datasets/ISL2_Places4"
 
