@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+import sys
+sys.path.append("/workspace/fisheye-vpr")
+
 import torch
 import numpy as np
 from tqdm import tqdm
@@ -16,7 +19,7 @@ class ClusteringTest(object):
         # Model to be trained
         self.encoder = Resnet18Encoder()
         netvlad_config = {
-            "num_clusters": 8,
+            "num_clusters": 20,
             "desc_dim": 512, # Up to the Feature Extraction Module
             "alpha": 100.0,
             "normalize_input": True,
@@ -39,30 +42,33 @@ class ClusteringTest(object):
     def test_clustering(self):
 
         epoch_loss = 0.0
-        batch_idx = 0.0
-        with tqdm(self.dataset.train_dataloader, unit=" batch") as tepoch:
-            # Divide all data into many batches
-            # and feed batch by batch until all data covered
-            for train_image, train_label in tepoch:
-                print("Accessing Picture : {}".format(np.shape(train_image)))
-                output_train = self.model(train_image)
-                print("Model Output : {}".format(np.shape(output_train)))
+
+        epoch_count = 0
+        target_epoch = 10
+        for epoch in tqdm(range(target_epoch), desc="Model Training", unit="epoch"):
+            # One Epoch Training
+            batch_idx = 0.0
+            with tqdm(self.dataset.train_dataloader, desc="==> Epoch {} Training Batch {}".format(epoch, batch_idx), unit=" batch") as tepoch:
+                # Divide all data into many batches
+                # and feed batch by batch until all data covered
+                for train_image, train_label in tepoch:
+                    # Forward Passing
+                    output_train = self.model(train_image)
                     # Calculate Loss
-                loss = self.criterion(output_train.cuda(), train_label.cuda())
-                # Memorize Loss for Epoch Loss
-                epoch_loss += loss.item()
-                # Reset the gradient
-                self.optimizer.zero_grad()
-                # Calculate Loss - Backpropagation
-                loss.backward(retain_graph=True)
-                # Optimizer adjust param that's been backproped
-                self.optimizer.step()
-                tepoch.set_postfix(epoch=tepoch, loss=loss.item(), batch_idx=batch_idx)
-                batch_idx += 1
-            # Calculate Loss Per Epoch
-            epoch_loss /= len(tepoch)
-
-
+                    loss = self.criterion(output_train.cuda(), train_label.cuda())
+                    # Memorize Loss for Epoch Loss
+                    epoch_loss += loss.item()
+                    # Reset the gradient
+                    self.optimizer.zero_grad()
+                    # Calculate Loss - Backpropagation
+                    loss.backward(retain_graph=True)
+                    # Optimizer adjust param that's been backproped
+                    self.optimizer.step()
+                    tepoch.set_postfix(epoch_idx=epoch_count, loss=loss.item(), batch_idx=batch_idx)
+                    batch_idx += 1
+                # Calculate Loss Per Epoch
+                epoch_loss /= len(tepoch)
+            epoch_count += 1
 
 if __name__ == "__main__":
     CLUSTERING_TEST = ClusteringTest()

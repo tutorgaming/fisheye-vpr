@@ -22,22 +22,22 @@ class DatasetTester(object):
         # Test Dataloader Initialization
         assert(self.dataset.train_dataloader is not None)
 
-        train_data_length = len(self.dataset.train_dataset)
-        print(train_data_length)
+        print("Batch Size = ", self.dataset.train_dataloader.batch_size)
 
+        train_data_length = len(self.dataset.train_dataset)
+        print("train_data_length", train_data_length)
         train_dataloader_length = len(self.dataset.train_dataloader)
-        print(train_dataloader_length)
+        print("train_dataloader_length", train_dataloader_length)
 
         sample_data, sample_label = self.dataset.train_dataset[0]
         print("Sample Label Class : {}".format(sample_label))
         print("Sample Data : {}".format(np.shape(sample_data)))
 
-
         with tqdm(self.dataset.test_dataloader, unit=" batch") as tepoch:
             # Divide all data into many batches
             # and feed batch by batch until all data covered
             for train_image, train_label in tepoch:
-                print("Accessing Picture : {}".format(train_label))
+                print("Accessing Label   : {}".format(np.shape(train_label)))
                 print("Accessing Picture : {}".format(np.shape(train_image)))
 
 if __name__ == "__main__":
