@@ -47,7 +47,18 @@ class Trainer(object):
         self.writer = writer
         self.dataset = dataset
         self.run_name = self._generate_run_name()
+        self.train_date_string = self._today_str()
         self.config["run_name"] = self.run_name
+
+    def _today_str(self)->str:
+        """
+        Generate Today Folder Name
+        For Naming Sort We use YEARMONTHDAY (20221231)
+        """
+        today = datetime.today()
+        today = today.astimezone(tz.gettz('Asia/Bangkok'))
+        today_string = today.strftime("%Y%m%d")
+        return today_string
 
     def _generate_run_name(
         self
@@ -210,7 +221,7 @@ class Trainer(object):
         # Model Name (Checkpoint name)
         model_file_name = 'model_{:02d}.pt'.format(epoch_idx)
         # Path Setup
-        result_path = f"./fisheye-vpr/notebooks/runs/{self.run_name}"
+        result_path = f"./runs/{self.train_date_string}/{self.run_name}"
         # Create folder if not exists
         result_pathlib = Path(result_path)
         result_pathlib.mkdir(parents=True, exist_ok=True)
