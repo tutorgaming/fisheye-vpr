@@ -17,7 +17,7 @@ from sklearn.model_selection import train_test_split
 #####################################################################
 class ENG3_Floor1_Fisheye_Dataset(object):
     def __init__(self):
-        self.name = "ISL2_LabLiftToiletFisheye"
+        self.name = "Eng3_Floor1_2Sec_18Classes"
         # Dataset Path
         self.path = "/workspace/Datasets/Eng3_Floor1_2Sec_18Classes/labelled"
         # Train Test Split Ratio
@@ -52,6 +52,7 @@ class ENG3_Floor1_Fisheye_Dataset(object):
         """
         Transform Image !
         """
+        # Crop image to have center square
         crop = lambda img: torchvision.transforms.functional.crop(
             img,
             top=0,
@@ -59,11 +60,18 @@ class ENG3_Floor1_Fisheye_Dataset(object):
             height=700,
             width=700,
         )
+        
+        # Resize square image 
         image_size = 640
         resize = torchvision.transforms.Resize((image_size,image_size))
+        
+        # Random Rotation
+        random_rotate = torchvision.transforms.RandomRotation(degrees=90)
+        
         return torchvision.transforms.Compose([
             crop,
             resize,
+            random_rotate,
             torchvision.transforms.ToTensor()
         ])
 
@@ -113,10 +121,10 @@ class ENG3_Floor1_Fisheye_Dataset(object):
         # Dataloaders
         self.train_dataloader = torch.utils.data.DataLoader(
             self.train_dataset,
-            batch_size=8,
+            batch_size=16,
             shuffle=True,
             num_workers=0,
-            drop_last=True
+            drop_last=False
         )
 
         self.val_dataloader = torch.utils.data.DataLoader(

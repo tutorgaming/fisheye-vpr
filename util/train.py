@@ -14,7 +14,10 @@ from pathlib import Path
 import torch
 import torch.nn as nn
 from typing import Any
-from tqdm import tqdm
+from tqdm.auto import tqdm
+
+from torch.utils.tensorboard import SummaryWriter
+
 
 #####################################################################
 # Default
@@ -22,7 +25,8 @@ from tqdm import tqdm
 DEFAULT_DICT = {
     "run_name": "default",
     "start_time": "",
-    "training_epoch": 20
+    "training_epoch": 20,
+    "enable_tensorboard": False,
 }
 
 #####################################################################
@@ -49,6 +53,24 @@ class Trainer(object):
         self.run_name = self._generate_run_name()
         self.train_date_string = self._today_str()
         self.config["run_name"] = self.run_name
+        
+        # Tensorboard Logging
+        self.tensorboard_enabled = False
+        self.tensorboard_writer = None
+        self.tensorboard_log_path = self.get_result_path_dir()
+        if "enable_tensorboard" in self.config:
+            self.tensorboard_enable = bool(self.config["enable_tensorboard"])
+            self.tensorboard_writer = SummaryWriter(self.tensorboard_log_path)
+
+    def get_writer(self)->SummaryWriter:
+        """
+        Return this Training SummaryWriter
+        """
+        if self.tensorboard_enable:
+            return self.tensorboard_writer
+        else:
+            print("No Tensorboard Enabled - But you request the log - Return None")
+            return None
 
     def _today_str(self)->str:
         """
@@ -130,6 +152,12 @@ class Trainer(object):
                 # Calculate Loss
                 loss = self.criterion(output_train.cuda(), train_label_batch.cuda())
 
+                # Write loss to Tensorboard 
+                if self.tensorboard_enabled:
+                    self.tensorboard_writer.add_scalar(
+                        "Loss/train", loss, epoch_idx)
+
+                
                 # Memorize Loss for Epoch Loss
                 epoch_avg_loss += loss.item()
                 # Reset the gradient
@@ -210,6 +238,18 @@ class Trainer(object):
             epoch_train_loss_list.append(epoch_train_loss)
             epoch_val_loss_list.append(epoch_val_loss)
 
+    def get_result_path_dir(
+        self,
+    )->str:
+        """
+        Generate Result Path Directory
+        """
+        result_path = f"./runs/{self.train_date_string}/{self.run_name}"
+        # Create folder if not exists
+        result_pathlib = Path(result_path)
+        result_pathlib.mkdir(parents=True, exist_ok=True)
+        return result_path
+    
     def save_model(
         self,
         model,
@@ -221,10 +261,7 @@ class Trainer(object):
         # Model Name (Checkpoint name)
         model_file_name = 'model_{:02d}.pt'.format(epoch_idx)
         # Path Setup
-        result_path = f"./runs/{self.train_date_string}/{self.run_name}"
-        # Create folder if not exists
-        result_pathlib = Path(result_path)
-        result_pathlib.mkdir(parents=True, exist_ok=True)
+        result_path = self.get_result_path_dir()
         # Final Path
         model_file_path = f"{result_path}/{model_file_name}"
         # Save model checkpoint
