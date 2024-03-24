@@ -53,14 +53,17 @@ class Trainer(object):
         self.run_name = self._generate_run_name()
         self.train_date_string = self._today_str()
         self.config["run_name"] = self.run_name
-        
+
         # Tensorboard Logging
-        self.tensorboard_enabled = False
+        self.tensorboard_enable = False
         self.tensorboard_writer = None
         self.tensorboard_log_path = self.get_result_path_dir()
+
         if "enable_tensorboard" in self.config:
-            self.tensorboard_enable = bool(self.config["enable_tensorboard"])
+            self.tensorboard_enable = self.config["enable_tensorboard"]
             self.tensorboard_writer = SummaryWriter(self.tensorboard_log_path)
+            print("Tensorboard Enabled : {}".format(self.tensorboard_enable))
+            print("Log Path : {}".format(self.tensorboard_log_path))
 
     def get_writer(self)->SummaryWriter:
         """
@@ -126,7 +129,8 @@ class Trainer(object):
         self,
         model,
         train_dataloader,
-        epoch_idx
+        epoch_idx,
+        batch_idx_count
     )->float:
         """
         Training for A SINGLE EPOCH
@@ -152,12 +156,11 @@ class Trainer(object):
                 # Calculate Loss
                 loss = self.criterion(output_train.cuda(), train_label_batch.cuda())
 
-                # Write loss to Tensorboard 
-                if self.tensorboard_enabled:
+                # Write loss to Tensorboard
+                if self.tensorboard_enable is True:
                     self.tensorboard_writer.add_scalar(
-                        "Loss/train", loss, epoch_idx)
+                        "Loss/train_batch", loss, batch_idx_count)
 
-                
                 # Memorize Loss for Epoch Loss
                 epoch_avg_loss += loss.item()
                 # Reset the gradient
@@ -173,10 +176,11 @@ class Trainer(object):
                     loss=loss.item(),
                     batch_idx=batch_idx
                 )
+                batch_idx_count+=1
 
         # End Training - Calculate Average Loss by divide rounds
         epoch_avg_loss /= len(train_epoch)
-        return epoch_avg_loss
+        return epoch_avg_loss, batch_idx_count
 
     def _validate_model(self,
         model,
@@ -221,14 +225,17 @@ class Trainer(object):
         # Create Array to Store the States
         epoch_train_loss_list = []
         epoch_val_loss_list = []
-
+        batch_idx_count = 0
         # Training Setting
         target_epoch_count = self.config["training_epoch"]
         # Iterate through every Epochs
         for epoch_idx in tqdm(range(target_epoch_count), desc="Model Training", unit="epoch"):
             # [Train]
             train_dataloader = self.dataset.train_dataloader
-            epoch_train_loss = self._train_model(self.model, train_dataloader, epoch_idx)
+            epoch_train_loss, batch_idx_count = self._train_model(self.model, train_dataloader, epoch_idx, batch_idx_count)
+            if self.tensorboard_enable is True:
+                self.tensorboard_writer.add_scalar(
+                    "Loss/train", epoch_train_loss, epoch_idx)
             # [Save]
             self.save_model(self.model, epoch_idx)
             # [Validate]
@@ -237,6 +244,7 @@ class Trainer(object):
             # Append Loss
             epoch_train_loss_list.append(epoch_train_loss)
             epoch_val_loss_list.append(epoch_val_loss)
+        self.tensorboard_writer.flush()
 
     def get_result_path_dir(
         self,
@@ -244,12 +252,12 @@ class Trainer(object):
         """
         Generate Result Path Directory
         """
-        result_path = f"./runs/{self.train_date_string}/{self.run_name}"
+        result_path = f"/workspace/results/{self.train_date_string}/{self.run_name}"
         # Create folder if not exists
         result_pathlib = Path(result_path)
         result_pathlib.mkdir(parents=True, exist_ok=True)
         return result_path
-    
+
     def save_model(
         self,
         model,
