@@ -7,10 +7,11 @@ Training
 #####################################################################
 # Imports
 #####################################################################
+import os
+import numpy as np
 from dateutil import tz
 from datetime import datetime
 from pathlib import Path
-
 import torch
 import torch.nn as nn
 from typing import Any
@@ -199,7 +200,7 @@ class Trainer(object):
 
         # No Gradient is backproped
         with torch.no_grad():
-            print(f"Validating epoch {epoch_idx}")
+            # print(f"Validating epoch {epoch_idx}")
             with tqdm(
                 val_dataloader,
                 unit="batch",
@@ -210,10 +211,17 @@ class Trainer(object):
                     output_train = model(val_image.cuda())
                     # Calculate Loss
                     loss = self.criterion(output_train.cuda(), val_label.cuda())
+                    # Log
+                    tepoch.set_postfix(
+                    epoch_idx=epoch_idx,
+                    loss=loss.item(),
+                    )
                     # Memorize Loss
                     val_losses.append(loss)
             # Calculate loss from list
             avg_val_loss = torch.stack(val_losses).mean().item()
+
+        # print(f"Validating epoch {epoch_idx} - Batch Avg Loss : {avg_val_loss}")
         return avg_val_loss
 
     def train(self):
@@ -232,19 +240,51 @@ class Trainer(object):
         for epoch_idx in tqdm(range(target_epoch_count), desc="Model Training", unit="epoch"):
             # [Train]
             train_dataloader = self.dataset.train_dataloader
-            epoch_train_loss, batch_idx_count = self._train_model(self.model, train_dataloader, epoch_idx, batch_idx_count)
-            if self.tensorboard_enable is True:
-                self.tensorboard_writer.add_scalar(
-                    "Loss/train", epoch_train_loss, epoch_idx)
+            epoch_train_loss, batch_idx_count = self._train_model(
+                self.model,
+                train_dataloader,
+                epoch_idx,
+                batch_idx_count
+            )
             # [Save]
             self.save_model(self.model, epoch_idx)
             # [Validate]
             val_dataloader = self.dataset.val_dataloader
-            epoch_val_loss = self._validate_model(self.model, val_dataloader, epoch_idx)
+            epoch_val_loss = self._validate_model(
+                self.model,
+                val_dataloader,
+                epoch_idx
+            )
+            # [Log]
+            if self.tensorboard_enable is True:
+                self.tensorboard_writer.add_scalar(
+                    "Loss/Train", epoch_train_loss, epoch_idx)
+                self.tensorboard_writer.add_scalar(
+                    "Loss/Validation", epoch_val_loss, epoch_idx)
             # Append Loss
             epoch_train_loss_list.append(epoch_train_loss)
             epoch_val_loss_list.append(epoch_val_loss)
-        self.tensorboard_writer.flush()
+        # Flush Tensorboard
+        if self.tensorboard_enable is True:
+            self.tensorboard_writer.flush()
+
+        # Populate Best Model and Output Log
+        self.config["epoch_train_loss"] = np.array(epoch_train_loss_list)
+        self.config["epoch_val_loss"] = np.array(epoch_val_loss_list)
+        # Find the best train model idx
+        best_train_loss_idx = epoch_train_loss_list.index(min(epoch_train_loss_list))
+        best_val_loss_idx = epoch_val_loss_list.index(min(epoch_val_loss_list))
+        self.config["best_train_loss_idx"] = best_train_loss_idx
+        self.config["best_val_loss_idx"] = best_val_loss_idx
+        self.config["result_path_dir"] = str(self.get_result_path_dir())
+        self.config["best_model_train_path"] = Path(os.path.join(
+            self.config["result_path_dir"], f"model_{best_train_loss_idx:02d}.pt"
+        ))
+        self.config["best_model_val_path"] = Path(os.path.join(
+            self.config["result_path_dir"], f"model_{best_val_loss_idx:02d}.pt"
+        ))
+        print("Training Completed !")
+
 
     def get_result_path_dir(
         self,

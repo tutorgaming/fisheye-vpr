@@ -60,14 +60,14 @@ class ENG3_Floor1_Fisheye_Dataset(object):
             height=700,
             width=700,
         )
-        
-        # Resize square image 
+
+        # Resize square image
         image_size = 640
         resize = torchvision.transforms.Resize((image_size,image_size))
-        
+
         # Random Rotation
         random_rotate = torchvision.transforms.RandomRotation(degrees=90)
-        
+
         return torchvision.transforms.Compose([
             crop,
             resize,
@@ -121,7 +121,7 @@ class ENG3_Floor1_Fisheye_Dataset(object):
         # Dataloaders
         self.train_dataloader = torch.utils.data.DataLoader(
             self.train_dataset,
-            batch_size=16,
+            batch_size=8,
             shuffle=True,
             num_workers=0,
             drop_last=False
@@ -141,3 +141,16 @@ class ENG3_Floor1_Fisheye_Dataset(object):
             shuffle=False,
             num_workers=0
         )
+
+    def get_same_class_data(self, class_label):
+        """
+        Return the Subset of Dataset of the Same Class Label
+        """
+        target_indices = [idx for idx, (img,label) in enumerate(self.dataset) if label == class_label]
+        target_loader = torch.utils.data.DataLoader(
+            torch.utils.data.Subset(self.dataset, target_indices),
+            batch_size=8,
+            shuffle=False,
+            num_workers=0
+        )
+        return target_loader
