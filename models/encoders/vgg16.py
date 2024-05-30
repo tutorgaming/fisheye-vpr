@@ -15,6 +15,9 @@ import torch.nn.functional as F
 from torchvision.models import vgg16
 from torchvision.models import VGG16_Weights
 
+# Matlab Layer weights
+from scipy.io import loadmat
+
 #####################################################################
 # Class
 #####################################################################
@@ -30,7 +33,7 @@ class VGG16Encoder(nn.Module):
         )
         # Assemble model
         self.feature_extractor = nn.Sequential(
-            encoder.features
+            encoder.features[0]
         )
         # Freeze Weight or Training more ?
         if self.fine_tuning:
@@ -39,6 +42,15 @@ class VGG16Encoder(nn.Module):
 
         last_dim_size = list(self.feature_extractor.parameters())[-1].shape[0]
         print("[VGG16] Output Dim Size: {}".format(last_dim_size))
+
+    def assign_matlab_weights(self, mat_weight):
+        """
+        Given MATLAB weights, assign them to the corresponding layers
+        """
+        self.feature_extractor
+
+
+
 
     def forward(self, x):
         return self.feature_extractor(x)
