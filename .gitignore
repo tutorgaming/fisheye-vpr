@@ -4,6 +4,7 @@ __pycache__/
 *.DS_Store
 # C extensions
 *.so
+*.mat
 
 # Distribution / packaging
 bin/
