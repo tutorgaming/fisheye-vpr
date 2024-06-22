@@ -1,3 +1,0 @@
-
-
-class HLOCVGG16Encoder(nn.Module):

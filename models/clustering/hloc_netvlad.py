@@ -15,18 +15,20 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.parameter import Parameter
+from scipy.io import loadmat
 
 #####################################################################
 # Class
 #####################################################################
 
-class NetVLAD(nn.modules):
+class HLOCNetVLAD(nn.Module):
     def __init__(
         self,
         input_dim:int = 512,        # Input Vector Dimension
         num_clusters:int = 64,                 # Cluster Count
         score_bias:bool = False,    # Bias for the Score
-        intranorm:bool = True       # Intra Group Normalization
+        intranorm:bool = True,      # Intra Group Normalization
+        whiten:bool = True          # Whiten the Output
     ):
         super().__init__()
         # Score Projection
@@ -36,11 +38,46 @@ class NetVLAD(nn.modules):
             kernel_size=1,
             bias=score_bias
         )
-        centers = Parameter(torch.empty([input_dim, num_clusters]))
-        nn.init.xavier_uniform_(centers)
-        self.register_parameter("centers", centers)
+        self.centers = nn.Parameter(
+            torch.empty([input_dim, num_clusters])
+        )
+        nn.init.xavier_uniform_(self.centers)
+
+        self.register_parameter("centers", self.centers)
+
+        # Configuration
+        self.whiten = whiten
         self.intranorm = intranorm
         self.output_dim = input_dim * num_clusters
+
+        # Initialize
+        # Load MATLAB Weights
+        checkpoint_path = "datasets/Pitts30K_struct.mat"
+        mat = loadmat(
+            checkpoint_path,
+            struct_as_record=False,
+            squeeze_me=True
+        )
+        self.assign_matlab_weights(mat)
+
+    def assign_matlab_weights(self, mat_weight):
+        """
+        Assign MATLAB weights to the corresponding layers
+        """
+        # Score Weight
+        score_w = mat_weight["net"].layers[30].weights[0] # D x K
+        score_w = torch.tensor(score_w).float()
+        score_w = score_w.permute([1,0])
+        score_w = score_w.unsqueeze(-1)
+        self.conv.weight = nn.Parameter(score_w)
+
+        # Center Weight
+        center_w = -mat_weight["net"].layers[30].weights[1]
+        center_w = torch.tensor(center_w).float()
+        self.centers = nn.Parameter(center_w)
+
+        print("[NetVLAD] Weights Imported")
+
 
     def forward(self, x):
         """
@@ -71,7 +108,18 @@ class NetVLAD(nn.modules):
         diff = x.unsqueeze(2) - self.centers.unsqueeze(0).unsqueeze(-1)
 
         desc = (softmax_output.unsqueeze(1) * diff).sum(dim=-1)
+
+        if self.intranorm:
+            # From the official MATLAB implementation.
+            desc = F.normalize(desc, dim=1)
+
         desc = desc.view(batch_size, -1)
         desc = F.normalize(desc, dim=1)
 
+        if self.whiten:
+            desc = self.whiten(desc)
+            desc = F.normalize(desc, dim=1) # Final L2 Normalization
+
         return desc
+
+
