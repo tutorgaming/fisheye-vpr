@@ -11,9 +11,7 @@ HLOC VGG-16 Encoder Class
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import logging
 from torchvision.models import vgg16
-from torchvision.models import VGG16_Weights
 
 # Matlab Layer weights
 from scipy.io import loadmat
@@ -32,7 +30,6 @@ class HLOCVGG16Encoder(nn.Module):
         encoder = list(vgg16().children())[0]
         # Remove last ReLU + MaxPool2d.
         self.feature_extractor = nn.Sequential(*list(encoder.children())[:-2])
-        # self.feature_extractor = encoder.features
 
         print("Loading MATLAB Weights")
         # Load MATLAB Weights
