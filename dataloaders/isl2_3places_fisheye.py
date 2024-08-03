@@ -19,7 +19,7 @@ class ISL2_3Places_Fisheye_Dataset(object):
     def __init__(self):
         self.name = "ISL2_LabLiftToiletFisheye"
         # Dataset Path
-        self.path = "~/Datasets/ISL2_LabLiftToilet/fisheye"
+        self.path = "/workspace/Datasets/ISL2_LabLiftToilet/fisheye"
 
         # Train Test Split Ratio
         self.train_ratio = 0.80
