@@ -25,12 +25,13 @@ class HLOCNetVLAD(nn.Module):
     def __init__(
         self,
         input_dim:int = 512,        # Input Vector Dimension
-        num_clusters:int = 64,                 # Cluster Count
+        num_clusters:int = 64,      # Cluster Count
         score_bias:bool = False,    # Bias for the Score
         intranorm:bool = True,      # Intra Group Normalization
         whiten:bool = True          # Whiten the Output
     ):
         super().__init__()
+
         # Score Projection
         self.conv = nn.Conv1d(
             input_dim,
