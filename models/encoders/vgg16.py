@@ -28,15 +28,28 @@ class VGG16Encoder(nn.Module):
         encoder = vgg16(
             weights=VGG16_Weights.IMAGENET1K_V1
         )
-        # Assemble model
-        self.feature_extractor = encoder.features[0]
+        # Backbone Omitted Last 2 Layers
+        # Which is Relu and MaxPool2D
+        self.backbone = nn.Sequential(
+            *list(encoder.features)[:-2]
+        )
         # Freeze Weight or Training more ?
         if self.fine_tuning:
-            for param in self.feature_extractor.parameters():
+            for param in self.backbone.parameters():
                 param.requires_grad = False
 
-        last_dim_size = list(self.feature_extractor.parameters())[-1].shape[0]
+        last_dim_size = list(self.backbone.parameters())[-1].shape[0]
         print("[VGG16] Output Dim Size: {}".format(last_dim_size))
 
     def forward(self, x):
-        return self.feature_extractor(x)
+        return self.backbone(x)
+
+    #################################################################
+    # Weight Loading
+    #################################################################
+    def assign_matlab_weights(self, mat_weight):
+        """
+        Given MATLAB weights, assign them to the corresponding layers
+        """
+        pass
+
