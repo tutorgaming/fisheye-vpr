@@ -8,10 +8,11 @@ HLOC VGG-16 Encoder Class
 #####################################################################
 # Imports
 #####################################################################
+import os
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from torchvision.models import vgg16
+from pathlib import Path
 
 # Matlab Layer weights
 from scipy.io import loadmat
@@ -25,15 +26,19 @@ class HLOCVGG16Encoder(nn.Module):
         # Config
         self.name = "vgg16"
         self.fine_tuning = fine_tuning
-        print("Loading Pretrained Model")
+        print("[HLOC-VGG16] Loading Pretrained Model")
         # Load Pretrained Model
         encoder = list(vgg16().children())[0]
-        # Remove last ReLU + MaxPool2d.
+
+        # Remove last ReLU + MaxPool2d
         self.feature_extractor = nn.Sequential(*list(encoder.children())[:-2])
 
-        print("Loading MATLAB Weights")
         # Load MATLAB Weights
-        checkpoint_path = "datasets/Pitts30K_struct.mat"
+        checkpoint_path = "/workspace/fisheye-vpr/models/weights/Pitts30K_struct.mat"
+        print("[HLOC-VGG16] MATLAB Weights : ", checkpoint_path)
+        # Check if Path is exist
+        if not Path("/workspace/fisheye-vpr/models/weights/Pitts30K_struct.mat").exists():
+            print("[HLOC-VGG16] Please Download the MATLAB Weights from HLOC Repo")
         mat = loadmat(
             checkpoint_path,
             struct_as_record=False,
@@ -48,7 +53,7 @@ class HLOCVGG16Encoder(nn.Module):
                 param.requires_grad = False
 
         last_dim_size = list(self.feature_extractor.parameters())[-1].shape[0]
-        print("[HLOCVGG16] Output Dim Size: {}".format(last_dim_size))
+        print("[HLOC-VGG16] Output Dim Size: {}".format(last_dim_size))
 
     def forward(self, x):
         return self.feature_extractor(x)
@@ -63,7 +68,7 @@ class HLOCVGG16Encoder(nn.Module):
             mat_weight["net"].layers
         )
         # Iterate and Assign over layers
-        # Magically i already checked that the conv layer is adjusted already
+        # Magically, I already checked that the conv layer is adjusted already
         # If we consider only conv
         for idx, (layer, mat_layer) in enumerate(pairs):
             if isinstance(layer, nn.Conv2d):

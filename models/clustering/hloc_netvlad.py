@@ -6,15 +6,11 @@ From the Hierachical Localization (HLoc) Repo
 #####################################################################
 # Imports
 #####################################################################
-import logging
 from pathlib import Path
-
-import numpy as np
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.nn.parameter import Parameter
 from scipy.io import loadmat
 
 #####################################################################
@@ -53,7 +49,11 @@ class HLOCNetVLAD(nn.Module):
 
         # Initialize
         # Load MATLAB Weights
-        checkpoint_path = "datasets/Pitts30K_struct.mat"
+        checkpoint_path = "/workspace/fisheye-vpr/models/weights/Pitts30K_struct.mat"
+        print("Loading MATLAB Weights based on path : ", checkpoint_path)
+        # Check if Path is exist
+        if not Path("/workspace/fisheye-vpr/models/weights/Pitts30K_struct.mat").exists():
+            print("Please Download the MATLAB Weights from google drive")
         mat = loadmat(
             checkpoint_path,
             struct_as_record=False,
@@ -77,7 +77,7 @@ class HLOCNetVLAD(nn.Module):
         center_w = torch.tensor(center_w).float()
         self.centers = nn.Parameter(center_w)
 
-        print("[NetVLAD] Weights Imported")
+        print("[HLOC-NetVLAD] Weights Imported")
 
 
     def forward(self, x):
