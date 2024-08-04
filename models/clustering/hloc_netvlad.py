@@ -16,18 +16,23 @@ from scipy.io import loadmat
 #####################################################################
 # Class
 #####################################################################
-
 class HLOCNetVLAD(nn.Module):
     def __init__(
         self,
-        input_dim:int = 512,        # Input Vector Dimension
+        desc_dim:int = 512,         # Input Vector Dimension
         num_clusters:int = 64,      # Cluster Count
         score_bias:bool = False,    # Bias for the Score
         intranorm:bool = True,      # Intra Group Normalization
         whiten:bool = True          # Whiten the Output
     ):
         super().__init__()
-
+        input_dim = desc_dim
+        print("[HLOC-NetVLAD] Initializing NetVLAD Layer")
+        print("[HLOC-NetVLAD] Input Dimension : ", input_dim)
+        print("[HLOC-NetVLAD] Number of Clusters : ", num_clusters)
+        print("[HLOC-NetVLAD] Score Bias : ", score_bias)
+        print("[HLOC-NetVLAD] Intra Normalization : ", intranorm)
+        print("[HLOC-NetVLAD] Whiten : ", whiten)
         # Score Projection
         self.conv = nn.Conv1d(
             input_dim,
@@ -43,9 +48,10 @@ class HLOCNetVLAD(nn.Module):
         self.register_parameter("centers", self.centers)
 
         # Configuration
-        self.whiten = whiten
+        self.should_whiten = whiten
         self.intranorm = intranorm
         self.output_dim = input_dim * num_clusters
+        self.whiten = nn.Linear(self.output_dim, 4096)
 
         # Initialize
         # Load MATLAB Weights
@@ -79,7 +85,6 @@ class HLOCNetVLAD(nn.Module):
 
         print("[HLOC-NetVLAD] Weights Imported")
 
-
     def forward(self, x):
         """
         Forward pass
@@ -98,6 +103,7 @@ class HLOCNetVLAD(nn.Module):
         # Transform input map (BxDxWxH) to a vector x (BxDxN)
         # Flattened_input (x)
         flattened_input = x.view(batch_size, img_desc_channel, -1)
+        print("[HLOC-NetVLAD] Flattened Input Shape : ", flattened_input.shape)
         # Score Projection (s)
         scores = self.conv(flattened_input)
         # Softmax Layer output (a) (e^s / sum(e^s))
@@ -106,7 +112,7 @@ class HLOCNetVLAD(nn.Module):
         # VLAD Core Calculation
         # V(j,k) : J is Dimension of the descriptor, K is the cluster
         # V(j,k) = sum( (x(j) - c(k)) * a(k) )
-        diff = x.unsqueeze(2) - self.centers.unsqueeze(0).unsqueeze(-1)
+        diff = flattened_input.unsqueeze(2) - self.centers.unsqueeze(0).unsqueeze(-1)
 
         desc = (softmax_output.unsqueeze(1) * diff).sum(dim=-1)
 
@@ -117,10 +123,8 @@ class HLOCNetVLAD(nn.Module):
         desc = desc.view(batch_size, -1)
         desc = F.normalize(desc, dim=1)
 
-        if self.whiten:
-            desc = self.whiten(desc)
-            desc = F.normalize(desc, dim=1) # Final L2 Normalization
+        # if self.whiten:
+        desc = self.whiten(desc)
+        desc = F.normalize(desc, dim=1) # Final L2 Normalization
 
         return desc
-
-
