@@ -50,8 +50,10 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 
-# # IPython Notebook
+# IPython Notebook
 .ipynb_checkpoints
 .pyc
+
 # Runs Result
 notebooks/runs
+models/weights/*
