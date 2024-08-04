@@ -43,13 +43,3 @@ class VGG16Encoder(nn.Module):
 
     def forward(self, x):
         return self.backbone(x)
-
-    #################################################################
-    # Weight Loading
-    #################################################################
-    def assign_matlab_weights(self, mat_weight):
-        """
-        Given MATLAB weights, assign them to the corresponding layers
-        """
-        pass
-
