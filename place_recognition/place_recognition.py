@@ -33,7 +33,7 @@ class PlaceRecognitionModule(object):
     def find_candidates(
         self,
         query_image: np.ndarray,
-        num_cadidates=10: int,
+        num_cadidates:int = 10,
     )->dict:
         """
         Find the candidates from the database

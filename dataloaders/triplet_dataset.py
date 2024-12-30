@@ -8,7 +8,6 @@ Triplet Dataset
 #####################################################################
 # Imports
 #####################################################################
-import os,time
 import logging
 from typing import Any, Tuple
 from torchvision.datasets import ImageFolder

@@ -40,34 +40,6 @@ from datetime import datetime
 # Class
 #####################################################################
 
-class Configuration(object): 
-    """
-    Metaclass for the configuration container
-    """
-    def __init__(self, config_path):
-        pass
-
-
-    def extract_config(self, config):
-        dataset = select_dataset(config['dataset'])
-        feature_extractor = select_feature_extractor(config['feature_extractor'])
-        clustering = select_clustering(['clustering'])
-        loss = select_loss(config['loss'])
-        training = config['training']
-        validation = config['validation']
-        
-        config_dict = {
-            "dataset": dataset,
-            "feature_extractor": feature_extractor,
-            "clustering": clustering,
-            "loss": loss,
-            "training": training,
-            "validation": validation,
-        }
-
-        return config_dict
-
-
 class Trainer(object):
     """
     Train and Validation
