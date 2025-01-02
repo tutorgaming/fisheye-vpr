@@ -183,4 +183,5 @@ class TripletImageDataset(ImageFolder):
         positive_tuple = (positive_sample, pos_target)
         negative_tuple = (negative_sample, neg_target)
 
-        return query_tuple, positive_tuple, negative_tuple
+        # return query_tuple, positive_tuple, negative_tuple
+        return query_sample, query_target
