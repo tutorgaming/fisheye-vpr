@@ -106,18 +106,22 @@ class Evaluator(object):
             test_data_tuple = self.generate_global_descriptors(test_batch)
             test_desc_batch, test_label_batch = test_data_tuple
 
-            # Perform Recall at K Matching
+            # Perform Recall at K Matching for the batch (usually size 8)
+            ## Eg : batch_recall = 0.5 is 4 from 8 queries answer correctly
             batch_recall = self.recall_at_k(test_data_tuple, self.database, k=k)
 
-            # Update metrics
+            # Update metrics for whole evaluation epoch
+            ## Get the batch size
             batch_size = test_desc_batch.size(0)
+            ## Convert batch_recall back to correct count
             total_recall += batch_recall * batch_size
+            ## Accumulate total samples
             total_samples += batch_size
             results.append(batch_recall)
 
-            # Print progress
-            if (batch_idx + 1) % 10 == 0:
-                print(f"[Evaluator] Processed {total_samples} samples, Current Recall@{k}: {total_recall/total_samples:.4f}")
+            # Print progress for large batches
+            # if (batch_idx + 1) % 10 == 0:
+            #     print(f"[Evaluator] Processed {total_samples} samples, Current Recall@{k}: {total_recall/total_samples:.4f}")
 
         # Calculate final average recall
         avg_recall = total_recall / total_samples
