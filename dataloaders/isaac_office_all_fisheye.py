@@ -20,7 +20,7 @@ class IsaacOffice_All_Fisheye_Dataset(object):
     Dataset of All Fisheye Images with all Lighting condition
     """
     def __init__(self):
-        self.name = "IsaacOffice_All_Fisheye"
+        self.name = "IsaacOfficeAll_Fisheye"
         # Dataset Path
         self.path = "/workspace/Datasets/isaac_office_dataset_rev1/FisheyeCamera"
 

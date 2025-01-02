@@ -17,7 +17,7 @@ from sklearn.model_selection import train_test_split
 #####################################################################
 class ENG3_Floor1_Fisheye_Dataset(object):
     def __init__(self):
-        self.name = "Eng3_Floor1_2Sec_18Classes"
+        self.name = "Eng3Floor1_Fisheye"
         # Dataset Path
         self.path = "/workspace/Datasets/Eng3_Floor1_2Sec_18Classes/labelled"
         # Train Test Split Ratio
