@@ -18,6 +18,7 @@ from typing import Any
 from tqdm.auto import tqdm
 
 from torch.utils.tensorboard import SummaryWriter
+import json  # Add this at top of file
 
 
 #####################################################################
@@ -151,7 +152,6 @@ class Trainer(object):
             for batch_idx, batch_data in enumerate(train_epoch):
                 # Extract batch data
                 train_image_batch, train_label_batch = batch_data
-
                 # Forward Passing
                 output_train = self.model(train_image_batch.cuda())
                 # Calculate Loss
@@ -213,8 +213,8 @@ class Trainer(object):
                     loss = self.criterion(output_train.cuda(), val_label.cuda())
                     # Log
                     tepoch.set_postfix(
-                    epoch_idx=epoch_idx,
-                    loss=loss.item(),
+                        epoch_idx=epoch_idx,
+                        loss=loss.item(),
                     )
                     # Memorize Loss
                     val_losses.append(loss)
@@ -246,8 +246,10 @@ class Trainer(object):
                 epoch_idx,
                 batch_idx_count
             )
+
             # [Save]
             self.save_model(self.model, epoch_idx)
+
             # [Validate]
             val_dataloader = self.dataset.val_dataloader
             epoch_val_loss = self._validate_model(
@@ -255,15 +257,18 @@ class Trainer(object):
                 val_dataloader,
                 epoch_idx
             )
+
             # [Log]
             if self.tensorboard_enable is True:
                 self.tensorboard_writer.add_scalar(
                     "Loss/Train", epoch_train_loss, epoch_idx)
                 self.tensorboard_writer.add_scalar(
                     "Loss/Validation", epoch_val_loss, epoch_idx)
+
             # Append Loss
             epoch_train_loss_list.append(epoch_train_loss)
             epoch_val_loss_list.append(epoch_val_loss)
+
         # Flush Tensorboard
         if self.tensorboard_enable is True:
             self.tensorboard_writer.flush()
@@ -271,19 +276,32 @@ class Trainer(object):
         # Populate Best Model and Output Log
         self.config["epoch_train_loss"] = np.array(epoch_train_loss_list)
         self.config["epoch_val_loss"] = np.array(epoch_val_loss_list)
+
         # Find the best train model idx
         best_train_loss_idx = epoch_train_loss_list.index(min(epoch_train_loss_list))
         best_val_loss_idx = epoch_val_loss_list.index(min(epoch_val_loss_list))
         self.config["best_train_loss_idx"] = best_train_loss_idx
         self.config["best_val_loss_idx"] = best_val_loss_idx
+
+        # Populate Path Result
         self.config["result_path_dir"] = str(self.get_result_path_dir())
         self.config["best_model_train_path"] = Path(os.path.join(
-            self.config["result_path_dir"], f"model_{best_train_loss_idx:02d}.pt"
+            self.config["result_path_dir"], f"model_{best_train_loss_idx:03d}.pt"
         ))
         self.config["best_model_val_path"] = Path(os.path.join(
-            self.config["result_path_dir"], f"model_{best_val_loss_idx:02d}.pt"
+            self.config["result_path_dir"], f"model_{best_val_loss_idx:03d}.pt"
         ))
+
+        # Write Result self.config dict to file
+        result_file_path = os.path.join(
+            self.config["result_path_dir"], "result.json"
+        )
+        with open(result_file_path, "w") as f:
+            json.dump(self.config, f, indent=4)
+
         print("Training Completed !")
+
+        return self.config
 
 
     def get_result_path_dir(
@@ -307,12 +325,11 @@ class Trainer(object):
         Save Model with torch.save model state
         """
         # Model Name (Checkpoint name)
-        model_file_name = 'model_{:02d}.pt'.format(epoch_idx)
+        model_file_name = 'model_{:03d}.pt'.format(epoch_idx)
         # Path Setup
         result_path = self.get_result_path_dir()
         # Final Path
         model_file_path = f"{result_path}/{model_file_name}"
         # Save model checkpoint
         torch.save(model.state_dict(), model_file_path)
-        # TODO: Find the good way to check the saving completeness
         return model_file_path
