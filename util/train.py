@@ -32,6 +32,23 @@ DEFAULT_DICT = {
 }
 
 #####################################################################
+# Util Class
+#####################################################################
+def make_json_serializable(obj):
+    """Convert numpy arrays and other non-serializable objects to Python native types"""
+    if isinstance(obj, np.ndarray):
+        return obj.tolist()
+    elif isinstance(obj, Path):
+        return str(obj)
+    return obj
+
+def prepare_config_for_json(config):
+    """Recursively convert dictionary values to JSON serializable types"""
+    return {k: make_json_serializable(v) if not isinstance(v, dict)
+            else prepare_config_for_json(v)
+            for k, v in config.items()}
+
+#####################################################################
 # Class
 #####################################################################
 class Trainer(object):
@@ -296,8 +313,11 @@ class Trainer(object):
         result_file_path = os.path.join(
             self.config["result_path_dir"], "result.json"
         )
+
+        # Convert nd.array to list, Path to str
+        json_safe_config = prepare_config_for_json(self.config)
         with open(result_file_path, "w") as f:
-            json.dump(self.config, f, indent=4)
+            json.dump(json_safe_config, f, indent=4)
 
         print("Training Completed !")
 
