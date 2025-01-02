@@ -21,6 +21,6 @@ loss:
   hardest: false
   squared: false
 
-training_epoch: 5
+training_epoch: 100
 eval_config: {}
 enable_tensorboard: true

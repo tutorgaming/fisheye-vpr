@@ -31,3 +31,32 @@
     #     },
     #     "enable_tensorboard" : True,
     # }
+
+"""
+dataset: isaac_office_all_fisheye
+
+model_config:
+  model_name: vprmodel
+  feature_extractor:
+    model: resnet18  # Choices: rps, vgg16, resnet18
+    fine_tuning: true
+
+  clustering:
+    model: netvlad
+    num_clusters: 64
+    desc_dim: 512
+    normalize: true
+    normalize_input: true
+    whiten: true
+    alpha: 100.0
+
+loss:
+  name: hardtripletloss
+  margin: 0.1
+  hardest: false
+  squared: false
+
+training_epoch: 1
+eval_config: {}
+enable_tensorboard: true
+"""
