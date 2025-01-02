@@ -25,9 +25,9 @@ class IsaacOffice_All_Fisheye_Dataset(object):
         self.path = "/workspace/Datasets/isaac_office_dataset_rev1/FisheyeCamera"
 
         # Train Test Split Ratio
-        self.train_ratio = 0.80
-        self.val_ratio   = 0.10
-        self.test_ratio  = 0.10
+        self.train_ratio = 0.750
+        self.val_ratio   = 0.125
+        self.test_ratio  = 0.125
         assert(self.train_ratio + self.val_ratio + self.test_ratio == 1.0)
 
         # Dataset
