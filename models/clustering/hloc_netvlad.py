@@ -103,7 +103,7 @@ class HLOCNetVLAD(nn.Module):
         # Transform input map (BxDxWxH) to a vector x (BxDxN)
         # Flattened_input (x)
         flattened_input = x.view(batch_size, img_desc_channel, -1)
-        print("[HLOC-NetVLAD] Flattened Input Shape : ", flattened_input.shape)
+        # print("[HLOC-NetVLAD] Flattened Input Shape : ", flattened_input.shape)
         # Score Projection (s)
         scores = self.conv(flattened_input)
         # Softmax Layer output (a) (e^s / sum(e^s))
