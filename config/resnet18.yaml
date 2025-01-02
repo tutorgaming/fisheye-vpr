@@ -4,7 +4,7 @@ model_config:
   model_name: vprmodel
   feature_extractor:
     model: resnet18  # Choices: rps, vgg16, resnet18
-    fine_tuning: true
+    fine_tuning: false
 
   clustering:
     model: netvlad
