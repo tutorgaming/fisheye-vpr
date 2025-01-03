@@ -14,15 +14,16 @@ from main import VPR
 class TestEvaluator(unittest.TestCase):
     def setUp(self):
         # Setup test data paths
-        self.result_path = Path("/workspace/old_results/20250102/resnet18finetuned_NetVLAD64_IsaacOfficeAll_Fisheye_02-Jan-2025_21-40-49")
+        # self.result_path = Path("/workspace/old_results/20250102/resnet18finetuned_NetVLAD64_IsaacOfficeAll_Fisheye_02-Jan-2025_21-40-49")
+        self.result_path = Path("/workspace/results/20250103/vgg16_NetVLAD64_IsaacOfficeAll_Fisheye_03-Jan-2025_10-53-35")
         self.result_json = self.result_path / "result.json"
 
         # Load results and config
-        self.results = self.load_config(self.result_json)
+        with open(str(self.result_json), 'r') as f:
+            self.results = json.load(f)
 
         # Initialize dataset
         self.dataset = IsaacOffice_All_Fisheye_Dataset()
-
         # Get best model path
         self.best_model_path = self.results["best_model_train_path"]
 
@@ -38,21 +39,6 @@ class TestEvaluator(unittest.TestCase):
             model=self.vpr.model.to("cuda"),
             dataset=self.dataset
         )
-
-    def load_config(self, result_file_path):
-        try:
-            with open(result_file_path, "r") as f:
-                # Using ast.literal_eval to safely evaluate string representation of dict
-                import ast
-                config_str = f.read()
-                loaded_config = ast.literal_eval(config_str)
-                return loaded_config
-        except FileNotFoundError:
-            print(f"Config file not found at {result_file_path}")
-            return None
-        except (ValueError, SyntaxError) as e:
-            print(f"Error parsing config file: {e}")
-            return None
 
     def test_evaluation(self):
         # Run evaluation
