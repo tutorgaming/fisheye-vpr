@@ -114,9 +114,10 @@ class Trainer(object):
         today = today.astimezone(tz.gettz('Asia/Bangkok'))
         time_string = today.strftime("%d-%b-%Y_%H-%M-%S")
         self.config["start_time"] = time_string
-        run_name = "{}{}_NetVLAD{}_{}_{}".format(
+        run_name = "{}{}_{}{}_{}_{}".format(
             self.model.feature_extractor.name,
             "finetuned" if self.model.feature_extractor.fine_tuning else "",
+            self.model.clustering.name,
             self.model.clustering.num_clusters,
             self.dataset.name,
             time_string

@@ -26,7 +26,7 @@ class NetVLAD(nn.Module):
 
         # Initialize the Module
         super(NetVLAD, self).__init__()
-
+        self.name = "NetVLAD"
         # Parameters
         self.num_clusters = num_clusters
         self.dim = desc_dim

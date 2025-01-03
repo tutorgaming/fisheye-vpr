@@ -33,6 +33,7 @@ class HLOCNetVLAD(nn.Module):
         print("[HLOC-NetVLAD] Score Bias : ", score_bias)
         print("[HLOC-NetVLAD] Intra Normalization : ", intranorm)
         print("[HLOC-NetVLAD] Whiten : ", whiten)
+        self.name = "hlocnetvlad"
         # Score Projection
         self.conv = nn.Conv1d(
             input_dim,
@@ -48,18 +49,20 @@ class HLOCNetVLAD(nn.Module):
         self.register_parameter("centers", self.centers)
 
         # Configuration
+        self.num_clusters = num_clusters
         self.should_whiten = whiten
         self.intranorm = intranorm
-        self.output_dim = input_dim * num_clusters
+        self.output_dim = input_dim * self.num_clusters
         self.whiten = nn.Linear(self.output_dim, 4096)
 
         # Initialize
-        # Load MATLAB Weights
+        ## Load MATLAB Weights
         checkpoint_path = "/workspace/fisheye-vpr/models/weights/Pitts30K_struct.mat"
-        print("Loading MATLAB Weights based on path : ", checkpoint_path)
-        # Check if Path is exist
-        if not Path("/workspace/fisheye-vpr/models/weights/Pitts30K_struct.mat").exists():
-            print("Please Download the MATLAB Weights from google drive")
+        print("[HLOC-NetVLAD] Loading MATLAB Weights based on path : ", checkpoint_path)
+
+        ## Check if Path is exist
+        if not Path(checkpoint_path).exists():
+            print("[HLOC-NetVLAD] Please Download the MATLAB Weights from google drive")
         mat = loadmat(
             checkpoint_path,
             struct_as_record=False,
@@ -123,8 +126,8 @@ class HLOCNetVLAD(nn.Module):
         desc = desc.view(batch_size, -1)
         desc = F.normalize(desc, dim=1)
 
-        # if self.whiten:
-        desc = self.whiten(desc)
+        if self.should_whiten:
+            desc = self.whiten(desc)
         desc = F.normalize(desc, dim=1) # Final L2 Normalization
 
         return desc

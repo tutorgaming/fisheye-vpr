@@ -24,7 +24,7 @@ class HLOCVGG16Encoder(nn.Module):
     def __init__(self, fine_tuning=False):
         super(HLOCVGG16Encoder, self).__init__()
         # Config
-        self.name = "vgg16"
+        self.name = "hlocvgg16"
         self.fine_tuning = fine_tuning
         print("[HLOC-VGG16] Loading Pretrained Model")
         # Load Pretrained Model
@@ -86,4 +86,4 @@ class HLOCVGG16Encoder(nn.Module):
 
                 layer.weight = nn.Parameter(imported_layer_weight)
                 layer.bias = nn.Parameter(imported_layer_bias)
-                print("[HLOCVGG16] CONV2D in Layer {} Weights and Bias Imported".format(idx))
+                print("[HLOC-VGG16] CONV2D in Layer {} Weights and Bias Imported".format(idx))
