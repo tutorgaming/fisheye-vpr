@@ -37,6 +37,7 @@ class Evaluator(object):
         print("[Evaluator] Preparing Database Descriptors")
         for train_batch in tqdm(train_dataloader, desc="Generating database descriptors", leave=True):
             descs, labels = self.generate_global_descriptors(train_batch)
+            print(f"Descs: {descs.shape} - Labels: {labels.shape}")
             temp_database.append(descs)
             temp_labels.append(labels)
 
@@ -67,17 +68,18 @@ class Evaluator(object):
         Returns:
             torch.Tensor: Global Descriptors
         """
-        # Unpack batch data
-        images, labels = batch
+        with torch.no_grad():
+            # Unpack batch data
+            images, labels = batch
 
-        # Move images to GPU if available
-        if torch.cuda.is_available():
-            images = images.cuda()
+            # Move images to GPU if available
+            if torch.cuda.is_available():
+                images = images.cuda()
 
-        # Extract descriptors and return
-        desc_batch = self.model(images)
+            # Extract descriptors and return
+            desc_batch = self.model(images)
 
-        return desc_batch, labels
+            return desc_batch, labels
 
     def evaluate(self, k=10):
         """
@@ -98,10 +100,12 @@ class Evaluator(object):
         test_dataloader = self.dataset.test_dataloader
         # print(f"[Evaluator] Starting evaluation with k={k}")
 
-        for batch_idx, test_batch in tqdm(enumerate(test_dataloader),
-                                 total=len(test_dataloader),
-                                 desc=f"Computing Recall@{k}",
-                                 leave=True):
+        for batch_idx, test_batch in tqdm(
+            enumerate(test_dataloader),
+            total=len(test_dataloader),
+            desc=f"Computing Recall@{k}",
+            leave=True
+            ):
             # Generate descriptors for test batch
             test_data_tuple = self.generate_global_descriptors(test_batch)
             test_desc_batch, test_label_batch = test_data_tuple
