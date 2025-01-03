@@ -13,7 +13,6 @@
     #             "model" : "netvlad",
     #             "num_clusters" : 64,
     #             "desc_dim" : 512,
-    #             "normalize" : True,
     #             "normalize_input": True,
     #             "whiten" : True,
     #             "alpha": 100.0,             # 100.0
