@@ -30,6 +30,7 @@ from models.clustering.hloc_netvlad import HLOCNetVLAD
 # from models.encoders.rps      import RPSEncoder
 from models.encoders.vgg16    import VGG16Encoder
 from models.encoders.resnet18 import Resnet18Encoder
+from models.encoders.hloc_vgg16 import HLOCVGG16Encoder
 
 # Dataset & Dataloader Classes
 from dataloaders.paris6k import Paris6K_Dataset
@@ -39,6 +40,7 @@ from dataloaders.eng3_floor1_fisheye import ENG3_Floor1_Fisheye_Dataset
 from dataloaders.isl2_3places_fisheye import ISL2_3Places_Fisheye_Dataset
 from dataloaders.isl2_3places_pinhole import ISL2_3Places_Pinhole_Dataset
 from dataloaders.isl2_places_fisheye import ISL2_Places_Fisheye_Dataset
+from dataloaders.all_fisheye import All_Fisheye_Dataset
 
 # Loss Function / Criterion
 from models.loss_function.HardTripletLoss import HardTripletLoss
@@ -50,6 +52,7 @@ EXTRACTOR_DICT = {
     # "rps"      : RPSEncoder,
     "vgg16"    : VGG16Encoder,
     "resnet18" : Resnet18Encoder,
+    "hloc_vgg16": HLOCVGG16Encoder,
 }
 DATASET_DICT = {
     "paris6k" : Paris6K_Dataset,
@@ -59,6 +62,7 @@ DATASET_DICT = {
     "isl2_3places_fisheye" : ISL2_3Places_Fisheye_Dataset,
     "isl2_3places_pinhole" : ISL2_3Places_Pinhole_Dataset,
     "isl2_places_fisheye" : ISL2_Places_Fisheye_Dataset,
+    "all_fisheye" : All_Fisheye_Dataset,
 }
 
 CLUSTERING_DICT = {
@@ -118,16 +122,16 @@ class VPR(object):
             self.clustering = HLOCNetVLAD(
                 num_clusters=clustering_config["num_clusters"],
                 desc_dim=clustering_config["desc_dim"],
-                score_bias=clustering_config["score_bias"],
-                intranorm=clustering_config["intranorm"],
-                whiten=clustering_config["whiten"],
+                score_bias=None,#clustering_config["score_bias"],
+                intranorm=None,#clustering_config["intranorm"],
+                whiten=None, #clustering_config["whiten"],
             )
         else:
             self.clustering = NetVLAD(
                 num_clusters=clustering_config["num_clusters"],
                 desc_dim=clustering_config["desc_dim"],
                 alpha=clustering_config["alpha"],
-                normalize_input=clustering_config["normalize"],
+                normalize_input=clustering_config["normalize_input"],
             )
 
 
@@ -201,16 +205,3 @@ if __name__ == "__main__":
         # Release the memory (RAM , GPU RAM)
         del VPR_MODEL
         del trainer
-
-        # Select the best model
-        # best_model = trainer.get_best_model()
-        # Set the model as inference mode
-
-        # # Evaluator
-        # tensorboard_writer = trainer.get_writer()
-        # evaluator = Evaluator(
-        #     dataset=VPR_MODEL.dataset,
-        #     model=VPR_MODEL.model.to("cuda"),
-        #     writer=tensorboard_writer,
-        #     config=complete_log_dict
-        # )
